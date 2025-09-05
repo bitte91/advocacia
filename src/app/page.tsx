@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,10 +12,23 @@ import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, Phone, Mail, MapPin, ChevronRight, Quote, ArrowRight, Linkedin, Facebook, Instagram, MessageCircle, Star } from 'lucide-react';
 
+// Schema de validação
+const contactFormSchema = z.object({
+  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+  email: z.string().email('E-mail inválido'),
+  phone: z.string().optional(),
+  message: z.string().min(10, 'Mensagem deve ter pelo menos 10 caracteres'),
+});
+
+type ContactFormData = z.infer<typeof contactFormSchema>;
+
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const testimonialRef = useRef<HTMLDivElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitMessage, setSubmitMessage] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,6 +55,47 @@ export default function Home() {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const form = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      message: '',
+    },
+  });
+
+  const onSubmit = async (data: ContactFormData) => {
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+    
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setSubmitStatus('success');
+        setSubmitMessage('Mensagem enviada com sucesso! Entraremos em contato em breve.');
+        form.reset();
+      } else {
+        setSubmitStatus('error');
+        setSubmitMessage(result.message || 'Erro ao enviar mensagem. Tente novamente.');
+      }
+    } catch (error) {
+      setSubmitStatus('error');
+      setSubmitMessage('Erro de conexão. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -342,8 +399,22 @@ export default function Home() {
             <div>
               <Card className="bg-gray-900 border-gray-800">
                 <CardContent className="p-8">
-                  <h3 className="text-2xl font-light text-white mb-6">ENVIE SUA MENSAGEM</h3>
-                  <form className="space-y-6">
+                  <h3 className="text-2xl font-light text-white mb-6">CONTE SEU CASO</h3>
+                  
+                  {/* Status da submissão */}
+                  {submitStatus === 'success' && (
+                    <div className="mb-6 p-4 bg-green-900/20 border border-green-600 rounded-lg">
+                      <p className="text-green-400 text-sm">{submitMessage}</p>
+                    </div>
+                  )}
+                  
+                  {submitStatus === 'error' && (
+                    <div className="mb-6 p-4 bg-red-900/20 border border-red-600 rounded-lg">
+                      <p className="text-red-400 text-sm">{submitMessage}</p>
+                    </div>
+                  )}
+                  
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <Label htmlFor="name" className="text-gray-400 mb-2 block">NOME *</Label>
@@ -351,7 +422,11 @@ export default function Home() {
                           id="name" 
                           placeholder="Seu nome completo"
                           className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 rounded-none"
+                          {...form.register('name')}
                         />
+                        {form.formState.errors.name && (
+                          <p className="text-red-400 text-xs mt-1">{form.formState.errors.name.message}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="email" className="text-gray-400 mb-2 block">E-MAIL *</Label>
@@ -360,7 +435,11 @@ export default function Home() {
                           type="email"
                           placeholder="seu@email.com"
                           className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 rounded-none"
+                          {...form.register('email')}
                         />
+                        {form.formState.errors.email && (
+                          <p className="text-red-400 text-xs mt-1">{form.formState.errors.email.message}</p>
+                        )}
                       </div>
                     </div>
                     <div>
@@ -369,22 +448,31 @@ export default function Home() {
                         id="phone" 
                         placeholder="(00) 00000-0000"
                         className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 rounded-none"
+                        {...form.register('phone')}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="message" className="text-gray-400 mb-2 block">MENSAGEM *</Label>
+                      <Label htmlFor="message" className="text-gray-400 mb-2 block">CONTE SEU CASO *</Label>
                       <Textarea 
                         id="message" 
-                        placeholder="Descreva sua necessidade jurídica..."
+                        placeholder="Descreva detalhadamente sua situação jurídica..."
                         rows={6}
                         className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 rounded-none resize-none"
+                        {...form.register('message')}
                       />
+                      {form.formState.errors.message && (
+                        <p className="text-red-400 text-xs mt-1">{form.formState.errors.message.message}</p>
+                      )}
                     </div>
                     <div className="text-sm text-gray-500">
                       * Campos obrigatórios. Seus dados estão protegidos conforme a LGPD.
                     </div>
-                    <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800 text-white py-4 rounded-none tracking-wider font-light">
-                      ENVIAR MENSAGEM
+                    <Button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className="w-full bg-blue-900 hover:bg-blue-800 text-white py-4 rounded-none tracking-wider font-light disabled:opacity-50"
+                    >
+                      {isSubmitting ? 'ENVIANDO...' : 'ENVIAR MENSAGEM'}
                     </Button>
                   </form>
                 </CardContent>
