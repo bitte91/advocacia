@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Phone, Mail, MapPin, ChevronRight, Quote, ArrowRight, Linkedin, Facebook, Instagram, MessageCircle, Star } from 'lucide-react';
+import { Menu, Phone, Mail, MapPin, ChevronRight, Quote, ArrowRight, Linkedin, Facebook, Instagram, MessageCircle, Star, Briefcase, Gavel, Landmark, Shield, HeartHandshake, Clock } from 'lucide-react';
 
 // Schema de validação
 const contactFormSchema = z.object({
@@ -597,32 +597,32 @@ const aboutValues = [
 
 const practiceAreas = [
   {
-    icon: MapPin,
+    icon: Briefcase,
     title: "DIREITO EMPRESARIAL",
     description: "Assessoria completa para empresas, desde a constituição até operações complexas e reestruturações societárias."
   },
   {
-    icon: Phone,
+    icon: Gavel,
     title: "DIREITO TRABALHISTA",
     description: "Soluções em relações trabalhistas, processos e compliance trabalhista para empresas e colaboradores."
   },
   {
-    icon: Mail,
+    icon: Landmark,
     title: "DIREITO CIVIL",
     description: "Atuação em contratos, responsabilidade civil, direitos do consumidor e propriedade intelectual."
   },
   {
-    icon: MapPin,
+    icon: Shield,
     title: "DIREITO TRIBUTÁRIO",
     description: "Planejamento tributário, defesa em processos fiscais e consultoria em compliance fiscal."
   },
   {
-    icon: Phone,
+    icon: Shield,
     title: "DIREITO DIGITAL",
     description: "Proteção de dados, cybersegurança, contratos tecnológicos e propriedade digital."
   },
   {
-    icon: Mail,
+    icon: HeartHandshake,
     title: "DIREITO DE FAMÍLIA",
     description: "Suporte em casos de família, sucessões, planejamento sucessório e inventários."
   }
@@ -708,7 +708,7 @@ const contactInfo = [
     content: "Av. Brigadeiro Faria Lima, 1500"
   },
   {
-    icon: Phone,
+    icon: Clock,
     title: "HORÁRIO",
     content: "Seg-Sex: 9h-18h"
   }
